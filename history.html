@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#1a73e8">
+  <title>売上履歴 - Venom売上管理</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="app-title"><i class="fas fa-history"></i> <span class="page-title-text">Venom売上管理</span></h1>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- 絞り込みカード -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-filter"></i> 絞り込み</h2>
+      </div>
+
+      <!-- 期間 -->
+      <div class="filter-row">
+        <div class="filter-group">
+          <label class="form-label">開始日</label>
+          <input type="date" id="filter-from" class="form-input date-picker">
+        </div>
+        <span class="filter-sep">〜</span>
+        <div class="filter-group">
+          <label class="form-label">終了日</label>
+          <input type="date" id="filter-to" class="form-input date-picker">
+        </div>
+      </div>
+
+      <!-- 支払い方法フィルター -->
+      <label class="form-label" style="margin-bottom:8px;">支払い方法</label>
+      <div class="filter-payment-row" id="filter-payment-row">
+        <button type="button" class="filter-pay-btn active" data-value="">すべて</button>
+        <button type="button" class="filter-pay-btn" data-value="現金">現金</button>
+        <button type="button" class="filter-pay-btn" data-value="クレジット">クレジット</button>
+        <button type="button" class="filter-pay-btn" data-value="電子マネー">電子マネー</button>
+        <button type="button" class="filter-pay-btn" data-value="QRコード">QRコード</button>
+      </div>
+
+      <!-- 従業員フィルター（管理者のみ表示） -->
+      <div id="staff-filter-section" data-admin-only>
+        <label class="form-label" style="margin-bottom:8px;margin-top:4px;">担当者</label>
+        <div class="filter-payment-row" id="filter-staff-row">
+          <button type="button" class="filter-pay-btn active" data-value="">全員</button>
+          <!-- JSで従業員タブを追加 -->
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-search">
+        <i class="fas fa-search"></i> 検索
+      </button>
+    </section>
+
+    <!-- 期間集計カード -->
+    <section class="card" id="period-summary-card" style="display:none;">
+      <div class="card-header">
+        <h2><i class="fas fa-coins"></i> 期間集計</h2>
+      </div>
+      <div class="summary-total-box small">
+        <div class="summary-total-label">期間売上合計（税込）</div>
+        <div class="summary-total-amount" id="period-total">¥0</div>
+        <div class="summary-tax-detail">
+          <span id="period-subtotal">小計 ¥0</span>
+          <span class="tax-sep">＋</span>
+          <span id="period-tax">消費税 ¥0</span>
+        </div>
+        <div class="summary-total-count" id="period-count">0件</div>
+      </div>
+      <!-- 支払い方法内訳 -->
+      <div class="breakdown-title" style="margin-top:12px;">支払い方法別</div>
+      <div class="breakdown-grid" id="history-breakdown-grid"></div>
+
+      <!-- 従業員別集計（管理者のみ表示） -->
+      <div data-admin-only>
+        <div class="breakdown-title" style="margin-top:16px;">担当者別</div>
+        <div id="history-staff-summary" class="staff-summary-list"></div>
+      </div>
+    </section>
+
+    <!-- 売上一覧 -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-list"></i> 売上一覧</h2>
+        <span id="history-result-count" class="label-count"></span>
+      </div>
+      <div id="history-list" class="sales-list">
+        <div class="empty-state">
+          <i class="fas fa-search"></i>
+          <p>条件を指定して検索してください</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-plus-circle"></i>
+      <span>売上入力</span>
+    </a>
+    <a href="summary.html" class="nav-item">
+      <i class="fas fa-chart-bar"></i>
+      <span>日次集計</span>
+    </a>
+    <a href="history.html" class="nav-item active">
+      <i class="fas fa-history"></i>
+      <span>履歴</span>
+    </a>
+    <a href="staff.html" class="nav-item" data-admin-only>
+      <i class="fas fa-users"></i>
+      <span>従業員</span>
+    </a>
+  </nav>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/history.js"></script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#1a73e8">
+  <title>Venom売上管理</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="has-staff-tab-bar">
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="app-title"><i class="fas fa-cash-register"></i> Venom売上管理</h1>
+      <button class="btn-icon" onclick="location.href='summary.html'" title="日次集計">
+        <i class="fas fa-chart-bar"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 営業日バナー（実日付と異なる場合のみ表示） -->
+  <div class="biz-date-banner" id="biz-date-banner" style="display:none;">
+    <i class="fas fa-calendar-check"></i>
+    <span id="biz-date-banner-text"></span>
+    <a href="staff.html" class="biz-date-banner-link" data-admin-only>変更</a>
+  </div>
+
+  <!-- 今日の売上サマリーバー -->
+  <section class="today-bar" id="today-bar">
+    <div class="today-info">
+      <span class="today-label" id="today-bar-date"></span>
+      <span class="today-amount" id="today-total">¥0</span>
+    </div>
+    <div class="today-info">
+      <span class="today-label">件数</span>
+      <span class="today-count" id="today-count">0件</span>
+    </div>
+    <div class="today-info">
+      <span class="today-label">最終更新</span>
+      <span class="today-last" id="today-last">--:--</span>
+    </div>
+  </section>
+
+  <!-- 従業員タブ -->
+  <div class="staff-tab-bar" id="staff-tab-bar">
+    <div class="staff-tabs-scroll">
+      <div class="staff-tabs" id="staff-tabs">
+        <!-- JSで動的生成 -->
+        <div class="staff-tab-loading">
+          <div class="spinner" style="width:16px;height:16px;border-width:2px;"></div>
+        </div>
+      </div>
+    </div>
+    <button class="staff-manage-btn" onclick="location.href='staff.html'" title="従業員管理" data-admin-only>
+      <i class="fas fa-user-cog"></i>
+    </button>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main class="main-content">
+
+    <!-- 選択中の担当者バナー -->
+    <div class="selected-staff-banner" id="selected-staff-banner" style="display:none;">
+      <div class="selected-staff-avatar" id="banner-avatar"></div>
+      <div class="selected-staff-info">
+        <span class="selected-staff-label">担当者</span>
+        <span class="selected-staff-name" id="banner-name">未選択</span>
+      </div>
+      <div class="selected-staff-sales" id="banner-sales">
+        <span class="selected-staff-sales-label">本日売上</span>
+        <span class="selected-staff-sales-amount" id="banner-amount">¥0</span>
+      </div>
+    </div>
+
+    <!-- 売上入力カード -->
+    <section class="card" id="input-card">
+      <div class="card-header">
+        <h2><i class="fas fa-plus-circle"></i> 売上入力</h2>
+        <span class="date-badge" id="current-date"></span>
+      </div>
+
+      <!-- 従業員未登録の警告 -->
+      <div class="no-staff-warning" id="no-staff-warning" style="display:none;">
+        <i class="fas fa-info-circle"></i>
+        <span>先に<a href="staff.html">従業員を登録</a>してください</span>
+      </div>
+
+      <form id="sale-form" autocomplete="off">
+
+        <!-- 金額入力（大きく） -->
+        <div class="amount-input-wrap">
+          <span class="currency-symbol">¥</span>
+          <input
+            type="number"
+            id="input-amount"
+            class="amount-input"
+            placeholder="0"
+            inputmode="numeric"
+            min="0"
+            required
+          >
+        </div>
+
+        <!-- 支払い方法 -->
+        <div class="form-group">
+          <label class="form-label">支払い方法</label>
+          <div class="payment-btns" id="payment-btns">
+            <button type="button" class="pay-btn active" data-value="現金">
+              <i class="fas fa-yen-sign"></i> 現金
+            </button>
+            <button type="button" class="pay-btn" data-value="クレジット">
+              <i class="fas fa-credit-card"></i> クレジット
+            </button>
+            <button type="button" class="pay-btn" data-value="電子マネー">
+              <i class="fas fa-mobile-alt"></i> 電子マネー
+            </button>
+            <button type="button" class="pay-btn" data-value="QRコード">
+              <i class="fas fa-qrcode"></i> QRコード
+            </button>
+          </div>
+        </div>
+
+        <!-- カテゴリ -->
+        <div class="form-group">
+          <label class="form-label" for="input-category">カテゴリ（任意）</label>
+          <input
+            type="text"
+            id="input-category"
+            class="form-input"
+            placeholder="例：飲食、物販、サービス"
+            list="category-list"
+          >
+          <datalist id="category-list">
+            <option value="飲食">
+            <option value="物販">
+            <option value="サービス">
+            <option value="テイクアウト">
+            <option value="デリバリー">
+          </datalist>
+        </div>
+
+        <!-- 備考 -->
+        <div class="form-group">
+          <label class="form-label" for="input-note">備考（任意）</label>
+          <input
+            type="text"
+            id="input-note"
+            class="form-input"
+            placeholder="メモを入力"
+          >
+        </div>
+
+        <!-- TAX CUT -->
+        <div class="form-group">
+          <label class="taxcut-toggle" id="taxcut-label">
+            <input type="checkbox" id="tax-cut-checkbox">
+            <span class="taxcut-slider"></span>
+            <span class="taxcut-text">
+              <span class="taxcut-badge">TAX CUT</span>
+              <span class="taxcut-desc">消費税をカット（税抜きで計上）</span>
+            </span>
+          </label>
+          <!-- TAX CUT 時のプレビュー -->
+          <div class="taxcut-preview" id="taxcut-preview" style="display:none;">
+            <i class="fas fa-scissors"></i>
+            入力金額をそのまま計上（消費税なし）
+          </div>
+          <!-- 通常時の税額プレビュー -->
+          <div class="tax-preview" id="tax-preview" style="display:none;">
+            <span id="tax-preview-subtotal"></span>
+            <span class="tax-preview-sep">+</span>
+            <span id="tax-preview-tax"></span>
+            <span class="tax-preview-sep">=</span>
+            <span id="tax-preview-total"></span>
+          </div>
+        </div>
+
+        <!-- 登録ボタン -->
+        <button type="submit" class="btn-primary" id="btn-submit">
+          <i class="fas fa-check"></i> 売上を登録
+        </button>
+
+      </form>
+    </section>
+
+    <!-- 本日の売上一覧 -->
+    <section class="card" id="history-card">
+      <div class="card-header">
+        <h2><i class="fas fa-list"></i> 本日の売上一覧</h2>
+        <button class="btn-text" onclick="loadTodaySales()">
+          <i class="fas fa-sync-alt"></i> 更新
+        </button>
+      </div>
+      <!-- タブ: 全員 / 担当者別 -->
+      <div class="list-tab-bar" id="list-tab-bar">
+        <button class="list-tab active" data-filter="all" onclick="switchListTab(this, 'all')">
+          <i class="fas fa-users"></i> 全員
+        </button>
+        <!-- 担当者タブはJSで追加 -->
+      </div>
+      <div id="sales-list" class="sales-list">
+        <div class="empty-state">
+          <i class="fas fa-receipt"></i>
+          <p>まだ売上がありません</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- トースト通知 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 削除確認モーダル -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-icon"><i class="fas fa-trash-alt"></i></div>
+      <h3 class="modal-title">削除の確認</h3>
+      <p class="modal-text">この売上データを削除しますか？</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+        <button class="btn-danger" id="btn-confirm-delete">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ナビゲーションバー（下部） -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <i class="fas fa-plus-circle"></i>
+      <span>売上入力</span>
+    </a>
+    <a href="summary.html" class="nav-item">
+      <i class="fas fa-chart-bar"></i>
+      <span>日次集計</span>
+    </a>
+    <a href="history.html" class="nav-item">
+      <i class="fas fa-history"></i>
+      <span>履歴</span>
+    </a>
+    <a href="staff.html" class="nav-item" data-admin-only>
+      <i class="fas fa-users"></i>
+      <span>従業員</span>
+    </a>
+  </nav>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

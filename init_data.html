@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Venom売上管理 - 初期データ設定</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+      border: 2px solid #dc143c;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(220,20,60,.25);
+    }
+    h1 {
+      color: #dc143c;
+      font-size: 28px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .subtitle {
+      color: #8a8a8a;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+    .info-box {
+      background: rgba(220,20,60,.1);
+      border: 1px solid #dc143c;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #dc143c 0%, #a00025 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      margin-bottom: 12px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(220,20,60,.4);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn-secondary {
+      background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+    }
+    .success {
+      background: rgba(52,168,83,.2);
+      border: 1px solid #34a853;
+      color: #34a853;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(255,255,255,.05);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: monospace;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>
+      <span style="font-size:32px;">🐍</span>
+      Venom売上管理
+    </h1>
+    <p class="subtitle">初期データセットアップ</p>
+    
+    <div class="info-box">
+      <strong>📋 セットアップ内容</strong><br>
+      このボタンを押すと、以下のサンプルデータがLocalStorageに保存されます：<br><br>
+      <strong>従業員:</strong> 5名（うち2名が管理者権限）<br>
+      <strong>営業日設定:</strong> 今日の日付<br>
+      <strong>売上データ:</strong> 空の状態でスタート
+    </div>
+
+    <button class="btn" onclick="initializeData()">
+      ✨ 初期データをセットアップ
+    </button>
+    
+    <button class="btn btn-secondary" onclick="clearAllData()">
+      🗑️ 全データをクリア
+    </button>
+    
+    <button class="btn btn-secondary" onclick="viewData()">
+      👁️ データを確認
+    </button>
+
+    <div class="success" id="success-msg"></div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    function initializeData() {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // 従業員データ（5名、うち2名が管理者）
+      const employees = [
+        { 
+          id: 1, 
+          name: 'マスター', 
+          pin: '1234', 
+          role: 'admin', 
+          color: '#dc143c', 
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        { 
+          id: 2, 
+          name: 'マネージャー', 
+          pin: '5678', 
+          role: 'admin', 
+          color: '#9c27b0', 
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        { 
+          id: 3, 
+          name: 'スタッフA', 
+          pin: '1111', 
+          role: 'staff', 
+          color: '#1a73e8', 
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        { 
+          id: 4, 
+          name: 'スタッフB', 
+          pin: '2222', 
+          role: 'staff', 
+          color: '#34a853', 
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        { 
+          id: 5, 
+          name: 'スタッフC', 
+          pin: '3333', 
+          role: 'staff', 
+          color: '#fbbc04', 
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+      ];
+
+      // 営業日設定
+      const appSettings = [
+        { 
+          key: 'business_date', 
+          value: today,
+          updated_at: new Date().toISOString()
+        }
+      ];
+
+      // 空の売上・レジ締めデータ
+      const sales = [];
+      const dailyRegister = [];
+
+      try {
+        localStorage.setItem('venom_table_employees', JSON.stringify(employees));
+        localStorage.setItem('venom_table_app_settings', JSON.stringify(appSettings));
+        localStorage.setItem('venom_table_sales', JSON.stringify(sales));
+        localStorage.setItem('venom_table_daily_register', JSON.stringify(dailyRegister));
+
+        const successMsg = document.getElementById('success-msg');
+        successMsg.textContent = '✅ 初期データのセットアップが完了しました！login.htmlからログインできます。';
+        successMsg.style.display = 'block';
+
+        const status = document.getElementById('status');
+        status.innerHTML = `
+          <strong>セットアップ完了:</strong><br>
+          - 従業員: ${employees.length}名登録<br>
+          - 管理者: マスター(PIN: 1234), マネージャー(PIN: 5678)<br>
+          - スタッフ: スタッフA(PIN: 1111), スタッフB(PIN: 2222), スタッフC(PIN: 3333)<br>
+          - 営業日: ${today}<br>
+          - 売上データ: 0件<br><br>
+          <strong>次のステップ:</strong><br>
+          1. <a href="login.html" style="color:#dc143c;">login.html</a> を開く<br>
+          2. 従業員を選択してPINを入力<br>
+          3. システムを使い始める
+        `;
+
+        setTimeout(() => {
+          if (confirm('login.htmlへ移動しますか？')) {
+            location.href = 'login.html';
+          }
+        }, 1500);
+      } catch (e) {
+        alert('エラー: ' + e.message);
+      }
+    }
+
+    function clearAllData() {
+      if (!confirm('全てのデータを削除しますか？この操作は取り消せません。')) {
+        return;
+      }
+
+      const tables = ['employees', 'app_settings', 'sales', 'daily_register'];
+      tables.forEach(table => {
+        localStorage.removeItem(`venom_table_${table}`);
+      });
+
+      const successMsg = document.getElementById('success-msg');
+      successMsg.textContent = '🗑️ 全データをクリアしました。';
+      successMsg.style.display = 'block';
+      successMsg.style.background = 'rgba(234,67,53,.2)';
+      successMsg.style.borderColor = '#ea4335';
+      successMsg.style.color = '#ea4335';
+
+      document.getElementById('status').innerHTML = '<strong>データクリア完了</strong><br>全テーブルが空になりました。';
+    }
+
+    function viewData() {
+      const tables = ['employees', 'app_settings', 'sales', 'daily_register'];
+      let output = '<strong>現在のデータ:</strong><br><br>';
+
+      tables.forEach(table => {
+        const data = localStorage.getItem(`venom_table_${table}`);
+        const parsed = data ? JSON.parse(data) : [];
+        output += `<strong>${table}:</strong> ${parsed.length}件<br>`;
+      });
+
+      document.getElementById('status').innerHTML = output;
+    }
+
+    // ページ読み込み時に現在の状態を表示
+    window.addEventListener('DOMContentLoaded', viewData);
+  </script>
+</body>
+</html>

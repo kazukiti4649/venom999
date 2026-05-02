@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#1a73e8">
+  <title>日次集計・レジ締め - Venom売上管理</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="app-title"><i class="fas fa-chart-bar"></i> <span class="page-title-text">Venom売上管理</span></h1>
+      <div class="header-date-picker">
+        <input type="date" id="target-date" class="date-picker">
+      </div>
+    </div>
+  </header>
+
+  <!-- 営業日バナー（実日付と異なる場合のみ表示） -->
+  <div class="biz-date-banner" id="biz-date-banner" style="display:none;">
+    <i class="fas fa-calendar-check"></i>
+    <span id="biz-date-banner-text"></span>
+    <a href="staff.html" class="biz-date-banner-link" data-admin-only>変更</a>
+  </div>
+
+  <main class="main-content">
+
+    <!-- 売上集計カード -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-coins"></i> 売上集計</h2>
+        <span class="date-badge" id="summary-date-label"></span>
+      </div>
+
+      <!-- 合計金額 -->
+      <div class="summary-total-box">
+        <div class="summary-total-label">本日の売上合計（税込）</div>
+        <div class="summary-total-amount" id="summary-total">¥0</div>
+        <div class="summary-tax-detail">
+          <span id="summary-subtotal">小計 ¥0</span>
+          <span class="tax-sep">＋</span>
+          <span id="summary-tax">消費税 ¥0</span>
+        </div>
+        <div class="summary-total-count" id="summary-count">0件の取引</div>
+      </div>
+
+      <!-- 支払い方法別内訳 -->
+      <div class="breakdown-title">支払い方法別内訳</div>
+      <div class="breakdown-grid" id="breakdown-grid"></div>
+    </section>
+
+    <!-- 従業員別集計カード -->
+    <section class="card" id="staff-summary-card">
+      <div class="card-header">
+        <h2><i class="fas fa-users"></i> 従業員別売上</h2>
+      </div>
+      <div id="staff-summary-list" class="staff-summary-list">
+        <div class="loading"><div class="spinner"></div><span>読み込み中…</span></div>
+      </div>
+    </section>
+
+    <!-- レジ締め入力カード -->
+    <section class="card" id="register-card">
+      <div class="card-header">
+        <h2><i class="fas fa-cash-register"></i> レジ締め入力</h2>
+        <span class="status-badge" id="close-status-badge"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="opening-balance">開始時レジ金（釣銭準備金）</label>
+        <div class="input-with-unit">
+          <span class="unit-prefix">¥</span>
+          <input type="number" id="opening-balance" class="form-input" placeholder="0" inputmode="numeric" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="cash-in-register">レジ内現金（実際に数えた金額）</label>
+        <div class="input-with-unit">
+          <span class="unit-prefix">¥</span>
+          <input type="number" id="cash-in-register" class="form-input" placeholder="0" inputmode="numeric" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="register-note">備考</label>
+        <input type="text" id="register-note" class="form-input" placeholder="特記事項があれば入力">
+      </div>
+
+      <button class="btn-primary" id="btn-close-register">
+        <i class="fas fa-calculator"></i> レジ締め計算
+      </button>
+    </section>
+
+    <!-- 突き合わせ結果カード -->
+    <section class="card" id="result-card" style="display:none;">
+      <div class="card-header">
+        <h2><i class="fas fa-balance-scale"></i> 突き合わせ結果</h2>
+      </div>
+
+      <div class="reconcile-table">
+        <div class="reconcile-row">
+          <span class="reconcile-label">現金売上合計</span>
+          <span class="reconcile-value" id="res-cash-sales">¥0</span>
+        </div>
+        <div class="reconcile-row">
+          <span class="reconcile-label">開始時レジ金</span>
+          <span class="reconcile-value" id="res-opening">¥0</span>
+        </div>
+        <div class="reconcile-row highlight">
+          <span class="reconcile-label">レジ内あるべき金額</span>
+          <span class="reconcile-value" id="res-expected">¥0</span>
+        </div>
+        <div class="reconcile-row">
+          <span class="reconcile-label">実際のレジ内現金</span>
+          <span class="reconcile-value" id="res-actual">¥0</span>
+        </div>
+        <div class="reconcile-divider"></div>
+        <div class="reconcile-row result-row" id="diff-row">
+          <span class="reconcile-label">過不足</span>
+          <span class="reconcile-value large" id="res-diff">¥0</span>
+        </div>
+      </div>
+
+      <div class="result-message" id="result-message"></div>
+
+      <button class="btn-save" id="btn-save-result">
+        <i class="fas fa-save"></i> 結果を保存
+      </button>
+    </section>
+
+    <!-- カテゴリ別集計 -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-tags"></i> カテゴリ別集計</h2>
+      </div>
+      <div id="category-breakdown" class="breakdown-grid">
+        <div class="empty-state"><i class="fas fa-tag"></i><p>カテゴリデータなし</p></div>
+      </div>
+    </section>
+
+    <!-- 本日の明細 -->
+    <section class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-receipt"></i> 本日の明細</h2>
+      </div>
+      <div id="summary-sales-list" class="sales-list">
+        <div class="empty-state"><i class="fas fa-receipt"></i><p>データがありません</p></div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ナビゲーションバー（下部） -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <i class="fas fa-plus-circle"></i>
+      <span>売上入力</span>
+    </a>
+    <a href="summary.html" class="nav-item active">
+      <i class="fas fa-chart-bar"></i>
+      <span>日次集計</span>
+    </a>
+    <a href="history.html" class="nav-item">
+      <i class="fas fa-history"></i>
+      <span>履歴</span>
+    </a>
+    <a href="staff.html" class="nav-item" data-admin-only>
+      <i class="fas fa-users"></i>
+      <span>従業員</span>
+    </a>
+  </nav>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/summary.js"></script>
+</body>
+</html>

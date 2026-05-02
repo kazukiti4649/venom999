@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#1a73e8">
+  <title>ログイン - Venom売上管理</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+
+  <div class="login-container">
+
+    <!-- ロゴ・タイトル -->
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="fas fa-cash-register"></i>
+      </div>
+      <h1 class="login-title">Venom売上管理</h1>
+      <p class="login-subtitle">担当者を選んでPINを入力してください</p>
+    </div>
+
+    <!-- STEP 1: 担当者選択 -->
+    <div class="login-card" id="step-select">
+      <div class="login-card-title">
+        <i class="fas fa-user-circle"></i> 担当者を選択
+      </div>
+      <div id="staff-select-list" class="staff-select-list">
+        <div class="loading"><div class="spinner"></div><span>読み込み中…</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: PIN入力 -->
+    <div class="login-card" id="step-pin" style="display:none;">
+      <button class="login-back-btn" id="btn-back">
+        <i class="fas fa-arrow-left"></i> 戻る
+      </button>
+
+      <!-- 選択中ユーザー表示 -->
+      <div class="pin-user-display" id="pin-user-display">
+        <div class="pin-user-avatar" id="pin-avatar"></div>
+        <div class="pin-user-info">
+          <div class="pin-user-name" id="pin-name"></div>
+          <div class="pin-user-role" id="pin-role"></div>
+        </div>
+      </div>
+
+      <div class="login-card-title" style="margin-top:20px;">
+        <i class="fas fa-lock"></i> PINコードを入力
+      </div>
+
+      <!-- PIN表示ドット -->
+      <div class="pin-dots" id="pin-dots">
+        <span class="pin-dot" id="dot-0"></span>
+        <span class="pin-dot" id="dot-1"></span>
+        <span class="pin-dot" id="dot-2"></span>
+        <span class="pin-dot" id="dot-3"></span>
+      </div>
+
+      <!-- エラーメッセージ -->
+      <div class="pin-error" id="pin-error"></div>
+
+      <!-- テンキー -->
+      <div class="pin-keypad" id="pin-keypad">
+        <button class="key-btn" data-num="1">1</button>
+        <button class="key-btn" data-num="2">2</button>
+        <button class="key-btn" data-num="3">3</button>
+        <button class="key-btn" data-num="4">4</button>
+        <button class="key-btn" data-num="5">5</button>
+        <button class="key-btn" data-num="6">6</button>
+        <button class="key-btn" data-num="7">7</button>
+        <button class="key-btn" data-num="8">8</button>
+        <button class="key-btn" data-num="9">9</button>
+        <button class="key-btn key-clear" id="key-clear">
+          <i class="fas fa-times"></i>
+        </button>
+        <button class="key-btn" data-num="0">0</button>
+        <button class="key-btn key-del" id="key-del">
+          <i class="fas fa-delete-left"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // login.html 専用の初期化
+    document.addEventListener('DOMContentLoaded', () => {
+      // すでにログイン済みなら売上入力へ
+      if (Auth.getSession()) {
+        location.replace('index.html');
+        return;
+      }
+      initLoginPage();
+    });
+  </script>
+</body>
+</html>
